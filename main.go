@@ -10,6 +10,9 @@ import (
 	"time"
 )
 
+const fileHeaders = "filename,extension,size,hash\n"
+const fileExtension = ".txt"
+
 func createFile(path string) {
 	// check if file exists
 	var _, err = os.Stat(path)
@@ -24,7 +27,7 @@ func createFile(path string) {
 	}
 
 	fmt.Println("File Created Successfully", path)
-	writeFile(path, "filename,extension,size,hash\n")
+	writeFile(path, fileHeaders)
 }
 
 func writeFile(path, data string) {
@@ -67,48 +70,52 @@ func visit(files *[]string) filepath.WalkFunc {
 			return nil
 		}
 		byteData, _ := ioutil.ReadFile(path)
+		fmt.Println(path, filepath.Ext(path), info.Size(), fmt.Sprintf("%x", md5.Sum(byteData)))
 		*files = append(*files, fmt.Sprintf("%s,%s,%d,%s\n", path, filepath.Ext(path), info.Size(), fmt.Sprintf("%x", md5.Sum(byteData))))
 		return nil
 	}
 }
 
-func IsValid(fp string) bool {
+func IsValidPath(fp string) error {
+
 	// Check if file already exists
 	if _, err := os.Stat(fp); err == nil {
-		return true
+		return err
 	}
 
 	// Attempt to create it
 	var d []byte
 	if err := ioutil.WriteFile(fp, d, 0644); err == nil {
 		os.Remove(fp) // And delete it
-		return true
+		return err
+	} else {
+		return err
 	}
-
-	return false
 }
 
 func main() {
 	argPath := os.Args[1]
 
-	if IsValid(argPath) {
+	err := IsValidPath(argPath)
+
+	if err == nil {
 		var files []string
 		t := time.Now().Unix()
-		fileExtension := ".txt"
+
 		createFile(fmt.Sprint(t) + fileExtension)
 
-		//root := "C:/Users/SajeedShaik/test/"
 		err := filepath.Walk(argPath, visit(&files))
 		if err != nil {
 			panic(err)
 		}
 
-		//writeFile(fmt.Sprint(t)+".txt", files[0])
 		for _, file := range files {
 			writeFile(fmt.Sprint(t)+fileExtension, file)
 		}
 
 		fmt.Println("File Updated Successfully.")
+	} else {
+		fmt.Println(err)
 	}
 
 }
