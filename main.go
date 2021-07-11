@@ -4,7 +4,6 @@ import (
 	"crypto/md5"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -63,13 +62,16 @@ func isError(err error) bool {
 func visit(files *[]string) filepath.WalkFunc {
 	return func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			log.Fatal(err)
+			return nil
 		}
 
 		if info.IsDir() {
 			return nil
 		}
-		byteData, _ := ioutil.ReadFile(path)
+		byteData, err := ioutil.ReadFile(path)
+		if err != nil {
+			return nil
+		}
 		fmt.Println(path, filepath.Ext(path), info.Size(), fmt.Sprintf("%x", md5.Sum(byteData)))
 		*files = append(*files, fmt.Sprintf("%s,%s,%d,%s\n", path, filepath.Ext(path), info.Size(), fmt.Sprintf("%x", md5.Sum(byteData))))
 		return nil
