@@ -7,7 +7,7 @@ The following table shows the possible combinations of GOOS and GOARCH you can u
 
 
 # Script to build OS respective binaries
-cmd:  ./go-build.bash PathTraveser
+cmd:  ./go-build.bash PathTraverser
 
 # Usage while executing binary pass first argument as string filepath to traverse 
 
